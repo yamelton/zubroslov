@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: Zubroslov API Gateway
+  version: 1.0.0
+x-yc-apigateway:
+  cors:
+    allowedOrigins:
+      - "*"
+    allowedMethods:
+      - GET
+      - POST
+      - PUT
+      - OPTIONS
+    allowedHeaders:
+      - "*"
+    exposeHeaders:
+      - Content-Type
+      - Authorization
+
+servers:
+  - url: https://api.zubroslov.ru
+    description: Production API
+
+paths:
+  /api/{proxy+}:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: http
+        url: http://<INTERNAL_BACKEND_IP>:8000/api/{proxy}
+        timeout: 30s
+        contentHandling: PASSTHROUGH
+        httpMethod: ANY
+        parameters:
+          path.proxy: method.request.path.proxy
+          header.Authorization: method.request.header.Authorization
+        headers:
+          Host: api.zubroslov.ru
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - OAuth2PasswordBearer: []
