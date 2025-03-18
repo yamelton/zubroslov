@@ -40,11 +40,11 @@ jobs:
 
       - name: Configure YC CLI
         env:
-          YC_SA_KEY: ${{ secrets.YC_SA_KEY }}
+          YC_SERVICE_ACCOUNT_KEY: ${{ secrets.YC_SERVICE_ACCOUNT_KEY }}
         run: |
           # Сохраняем ключ в файл
           mkdir -p ~/.config/yandex-cloud
-          echo "$YC_SA_KEY" > ~/.config/yandex-cloud/key.json
+          echo "$YC_SERVICE_ACCOUNT_KEY" > ~/.config/yandex-cloud/key.json
           
           # Настраиваем профиль
           yc config profile create github-actions
