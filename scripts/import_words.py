@@ -6,8 +6,8 @@ from gtts import gTTS
 from sqlmodel import Session, select
 
 # Локальные импорты
-from backend.src.database import create_db_and_tables, engine
-from backend.src.models.word import Word
+from zubroslov.src.database import create_db_and_tables, engine
+from zubroslov.src.models.word import Word
 
 # Конфигурация
 AUDIO_DIR = Path("static/audio")

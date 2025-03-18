@@ -3,12 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
 
-from backend.src.database import get_session
-# from backend.src.models.progress import Progress
-# from backend.src.models.user import User
-from backend.src.models.models import Progress, User
-from backend.src.models.word import WordProgress
-from backend.src.routers.auth import get_current_user
+from ..database import get_session
+from ..models.models import Progress, User
+from ..models.word import WordProgress
+from ..routers.auth import get_current_user
 
 router = APIRouter(
     prefix="/api/progress",

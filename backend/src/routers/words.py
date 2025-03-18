@@ -5,10 +5,10 @@ import random
 from datetime import datetime, timedelta
 
 # Локальные импорты
-from backend.src.database import get_session
-from backend.src.models.word import Word, WordProgress
-from backend.src.models.models import User
-from backend.src.routers.auth import get_current_user
+from ..database import get_session
+from ..models.word import Word, WordProgress
+from ..models.models import User
+from ..routers.auth import get_current_user
 
 router = APIRouter(
     prefix="/api/words",

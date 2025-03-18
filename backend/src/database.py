@@ -1,7 +1,5 @@
 from sqlmodel import create_engine, SQLModel, Session, select
 from .config import settings
-# from .models.user import User
-# from .models.progress import Progress
 from .models.models import User, Progress
 from passlib.context import CryptContext
 
@@ -34,7 +32,7 @@ def create_test_user(session: Session):
 
 
 def create_db_and_tables():
-    from backend.src.models.word import Word
+    from .models.word import Word
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         create_test_user(session)

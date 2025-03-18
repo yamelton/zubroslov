@@ -26,7 +26,7 @@ paths:
     x-yc-apigateway-any-method:
       x-yc-apigateway-integration:
         type: http
-        url: http://<INTERNAL_BACKEND_IP>:8000/api/{proxy}
+        url: http://${INTERNAL_BACKEND_IP}:8000/api/{proxy}
         timeout: 30s
         contentHandling: PASSTHROUGH
         httpMethod: ANY

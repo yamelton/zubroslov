@@ -27,11 +27,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Login to Yandex Container Registry
+
+      - name: Install dependencies
         run: |
-          echo "${{ secrets.YC_SA_KEY }}" > key.json
-          yc config set service-account-key key.json
-          docker login -u iam -p $(yc iam create-token) cr.yandex
+          sudo apt-get update
+          sudo apt-get install -y jq python3-pip
+          pip install pyjwt
+
+      - name: Login to Yandex Container Registry
+        env:
+          YC_SA_KEY: ${{ secrets.YC_SA_KEY }}
+          YC_REGISTRY_ID: ${{ secrets.YC_REGISTRY_ID }}
+        run: |
+          # Генерация JWT-токена
+          TOKEN=$(echo "$YC_SA_KEY" | jq -r .service_account_key | base64 -d | jq -r .private_key |
+            openssl pkcs8 -inform PEM -nocrypt -topk8 |
+            jwt encode --alg PS256 --secret @- -p "aud=https://iam.api.cloud.yandex.net/iam/v1/tokens&iss=${YC_SA_KEY}" -)
+
+          # Аутентификация в Docker
+          echo $TOKEN | docker login --username iam --password-stdin cr.yandex
+
       - name: Build and push
         uses: docker/build-push-action@v3
         with:

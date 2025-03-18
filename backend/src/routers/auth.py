@@ -8,10 +8,9 @@ from sqlmodel import Session, select
 
 from sqlalchemy.orm import selectinload
 
-from backend.src.database import get_session
-from backend.src.config import Settings, get_settings
-# from backend.src.models.user import User
-from backend.src.models.models import User
+from ..database import get_session
+from ..config import Settings, get_settings
+from ..models.models import User
 
 router = APIRouter(
     prefix="/api/auth",
