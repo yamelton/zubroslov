@@ -1,0 +1,19 @@
+# Core
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Database
+sqlmodel==0.0.16
+asyncpg==0.29.0
+
+# Auth & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pyjwt>=2.8.0
+
+# Config
+pydantic-settings==2.2.1
+
+# Utils
+python-multipart==0.0.9
+aiofiles==23.2.1
