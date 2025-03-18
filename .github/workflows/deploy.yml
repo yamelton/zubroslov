@@ -39,20 +39,28 @@ jobs:
           YC_SA_KEY: ${{ secrets.YC_SA_KEY }}
           YC_REGISTRY_ID: ${{ secrets.YC_REGISTRY_ID }}
         run: |
+          # Проверка, что YC_SA_KEY не пустой (для отладки)
+          if [ -z "$YC_SA_KEY" ]; then
+            echo "ERROR: YC_SA_KEY is empty!"
+            exit 1
+          fi
           # Устанавливаем зависимости
           sudo apt-get update
           sudo apt-get install -y jq python3-pip
           pip install pyjwt
 
-          # Генерация токена через Python
-          TOKEN=$(python3 -c "import jwt, os; \
-          from json import loads; \
-          key = loads(os.environ['YC_SA_KEY'])['private_key']; \
-          print(jwt.encode({'aud': 'https://iam.api.cloud.yandex.net/iam/v1/tokens'}, key, algorithm='PS256'))")
-
-          # Логинимся в Docker
-          echo $TOKEN | docker login --username iam --password-stdin cr.yandex
-
+          # Генерация токена
+          TOKEN=$(python3 -c "import jwt, os, json; \
+            try: \
+              sa_key = os.environ['YC_SA_KEY']; \
+              key_data = json.loads(sa_key); \
+              key = key_data['private_key']; \
+              token = jwt.encode({'aud': 'https://iam.api.cloud.yandex.net/iam/v1/tokens'}, key, algorithm='PS256'); \
+              print(token); \
+            except Exception as e: \
+              print(f'Error: {e}'); exit(1)")
+        
+          echo "$TOKEN" | docker login --username iam --password-stdin cr.yandex
 
       - name: Build and push
         uses: docker/build-push-action@v3
