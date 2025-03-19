@@ -17,7 +17,7 @@ jobs:
         run: |
           cd frontend
           npm ci
-          npm run build
+          npm run build -- --mode production
 
       - name: Configure AWS CLI for Yandex Object Storage
         run: |
@@ -29,7 +29,7 @@ jobs:
 
       - name: Deploy to Object Storage
         run: |
-          aws s3 sync frontend/dist/ s3://zubroslov-static/ \
+          aws s3 sync frontend/dist/ s3://zubroslov.ru/ \
             --delete \
             --acl public-read \
             --cache-control "max-age=31536000" \
