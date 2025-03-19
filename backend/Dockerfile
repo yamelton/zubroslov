@@ -19,6 +19,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN pip install -e .
 
+RUN mkdir -p /app/static && chmod -R 755 /app/static
+
 # Создаем непривилегированного пользователя
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
