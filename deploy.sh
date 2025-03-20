@@ -24,7 +24,7 @@ fi
 
 # Получение последнего образа
 echo "[$(date)] Получаем последний образ из Container Registry"
-docker pull cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:latest
+HOME=/home/ubuntu docker pull cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:latest
 
 # Запуск нового контейнера
 echo "[$(date)] Запускаем новый контейнер"
