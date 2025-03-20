@@ -28,7 +28,7 @@ export function LearnPage() {
         // Добавляем полный URL только к основному слову
         const updatedWord = {
           ...response.word,
-          audioUrl: `${import.meta.env.SERVER_URL || 'http://localhost:8000'}${response.word.audio_path}`
+          audioUrl: `${import.meta.env.VITE_SERVER_URL || 'http://localhost:8000'}${response.word.audio_path}`
         };
         console.log(updatedWord.audioUrl);
 
