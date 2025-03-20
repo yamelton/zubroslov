@@ -22,9 +22,15 @@ if docker ps -a | grep -q zubroslov-api-debug; then
   docker rm zubroslov-api-debug || true
 fi
 
+# Аутентификация в Container Registry
+echo "[$(date)] Аутентификация в Container Registry"
+export PATH=$PATH:/home/ubuntu/yandex-cloud/bin
+IAM_TOKEN=$(yc iam create-token --service-account-key /home/ubuntu/.yc/key.json)
+echo "$IAM_TOKEN" | docker login --username iam --password-stdin cr.yandex
+
 # Получение последнего образа
 echo "[$(date)] Получаем последний образ из Container Registry"
-HOME=/home/ubuntu docker pull cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:latest
+docker pull cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:latest
 
 # Запуск нового контейнера
 echo "[$(date)] Запускаем новый контейнер"
