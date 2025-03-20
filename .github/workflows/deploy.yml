@@ -14,6 +14,9 @@ jobs:
           node-version: 18.x
 
       - name: Install dependencies and build
+        env:
+          VITE_API_URL: "https://api.zubroslov.ru/api"
+          VITE_SERVER_URL: "https://api.zubroslov.ru"
         run: |
           cd frontend
           npm ci
