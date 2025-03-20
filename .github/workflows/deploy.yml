@@ -77,7 +77,7 @@ jobs:
         with:
           host: 84.201.130.119
           username: ubuntu
-          key: ${{ secrets.VM_SSH_KEY }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             mkdir -p /home/ubuntu/zubroslov/scripts
             mkdir -p /home/ubuntu/zubroslov/logs
@@ -87,7 +87,7 @@ jobs:
         with:
           host: 84.201.130.119
           username: ubuntu
-          key: ${{ secrets.VM_SSH_KEY }}
+          key: ${{ secrets.SSH_KEY }}
           source: "deploy.sh"
           target: "/home/ubuntu/zubroslov/scripts"
           
@@ -96,7 +96,7 @@ jobs:
         with:
           host: 84.201.130.119
           username: ubuntu
-          key: ${{ secrets.VM_SSH_KEY }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             chmod +x /home/ubuntu/zubroslov/scripts/deploy.sh
             /home/ubuntu/zubroslov/scripts/deploy.sh
