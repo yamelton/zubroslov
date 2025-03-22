@@ -3,6 +3,7 @@ version: '3.8'
 services:
   backend:
     build: ./backend
+    user: "1000:1000"
     volumes:
       - static_volume:/app/static
     environment:
