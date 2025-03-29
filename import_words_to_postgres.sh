@@ -5,6 +5,6 @@
 set -e  # Exit on error
 
 echo "Importing words to PostgreSQL database..."
-docker exec zubroslov-api python -c "from scripts.import_words import import_words; import_words()"
+docker exec zubroslov-api python /app/scripts/import_words.py
 
 echo "Words import complete!"

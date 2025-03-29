@@ -97,9 +97,21 @@ docker run -d --name zubroslov-api \
   cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:latest
 ```
 
-### 4. Импорт слов
+### 4. Подготовка файла со словами
 
-После настройки PostgreSQL, импортируйте слова:
+Создайте файл `all_words.json` в директории `/app` на сервере:
+
+```bash
+# Скопируйте файл all_words.json на сервер
+scp scripts/all_words.json user@your-server:/home/ubuntu/zubroslov/all_words.json
+
+# Скопируйте файл в контейнер
+docker cp /home/ubuntu/zubroslov/all_words.json zubroslov-api:/app/all_words.json
+```
+
+### 5. Импорт слов
+
+После настройки PostgreSQL и подготовки файла со словами, импортируйте слова:
 
 ```bash
 ./import_words_to_postgres.sh
