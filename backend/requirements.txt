@@ -8,7 +8,7 @@ asyncpg==0.29.0
 psycopg2-binary==2.9.9
 
 # Auth & Security
-fastapi-users[sqlmodel]==14.0.1
+fastapi-users[sqlalchemy]
 passlib[bcrypt]==1.7.4
 
 # Config
