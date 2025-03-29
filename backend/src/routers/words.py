@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from ..database import get_session
 from ..models.word import Word, WordProgress
 from ..models.models import User
-from ..routers.auth import get_current_user
+from ..auth.router import current_active_user
 
 router = APIRouter(
     prefix="/api/words",
@@ -44,7 +44,7 @@ async def get_words(
 @router.get("/next", response_model=dict)
 async def get_next_word(
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(current_active_user),
     exclude_last: int = Query(5)
 ):
     try:

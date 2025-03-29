@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from .database import create_db_and_tables
-from .routers import auth, words, progress
+from .routers import words, progress
+from .auth.router import auth_router, register_router, reset_password_router, verify_router, users_router
 from .config import settings
 
 app = FastAPI(title="Zubroslov API")
@@ -32,7 +33,31 @@ def on_startup():
     create_db_and_tables()
 
 # Подключение роутеров
-app.include_router(auth.router)
+app.include_router(
+    auth_router,
+    prefix="/api/auth/jwt",
+    tags=["auth"],
+)
+app.include_router(
+    register_router,
+    prefix="/api/auth",
+    tags=["auth"],
+)
+app.include_router(
+    reset_password_router,
+    prefix="/api/auth",
+    tags=["auth"],
+)
+app.include_router(
+    verify_router,
+    prefix="/api/auth",
+    tags=["auth"],
+)
+app.include_router(
+    users_router,
+    prefix="/api/users",
+    tags=["users"],
+)
 app.include_router(words.router)
 app.include_router(progress.router)
 

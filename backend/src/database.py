@@ -2,6 +2,7 @@ from sqlmodel import create_engine, SQLModel, Session, select
 from .config import settings
 from .models.models import User, Progress
 from passlib.context import CryptContext
+import uuid
 
 engine = create_engine(
     settings.DATABASE_URL, 
@@ -21,8 +22,12 @@ def create_test_user(session: Session):
     if not test_user:
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         new_user = User(
+            email="testuser@example.com",
             username="testuser",
-            hashed_password=pwd_context.hash("testpass")
+            hashed_password=pwd_context.hash("testpass"),
+            is_active=True,
+            is_verified=True,
+            is_superuser=False
         )
         session.add(new_user)
         session.commit()

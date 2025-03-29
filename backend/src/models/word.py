@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import datetime
+import uuid
 
 class WordBase(SQLModel):
     english: str = Field(index=True)  # Английское слово
@@ -17,7 +18,7 @@ class WordCreate(WordBase):
 class WordProgress(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     word_id: int = Field(foreign_key="word.id")
-    user_id: int = Field(foreign_key="user.id")
+    user_id: uuid.UUID = Field(foreign_key="user.id")
     last_shown: datetime = Field(default_factory=datetime.utcnow)
     shown_count: int = 0
     correct_count: int = 0

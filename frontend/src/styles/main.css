@@ -116,6 +116,76 @@ button.incorrect {
   color: #2D3436;
 }
 
+/* Auth Page Styles */
+.auth-page {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.auth-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.auth-page input {
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.auth-page input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.auth-page button[type="submit"] {
+  background: var(--primary);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.auth-page button[type="submit"]:hover {
+  background: #5bb951;
+}
+
+.auth-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.auth-tabs button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #777;
+  box-shadow: none;
+}
+
+.auth-tabs button.active {
+  color: var(--primary);
+  font-weight: bold;
+  border-bottom: 2px solid var(--primary);
+}
+
+.auth-tabs button:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
 .progress-indicator::before {
   content: '⭐';
   font-size: 1.4rem;

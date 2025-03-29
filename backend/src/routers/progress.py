@@ -6,7 +6,7 @@ from typing import List
 from ..database import get_session
 from ..models.models import Progress, User
 from ..models.word import WordProgress
-from ..routers.auth import get_current_user
+from ..auth.router import current_active_user
 
 router = APIRouter(
     prefix="/api/progress",
@@ -20,7 +20,7 @@ async def record_study_session(
     words_learned: int,
     accuracy: float,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_active_user)
 ):
     """Запись учебной сессии"""
     if not (0 <= accuracy <= 1):
@@ -42,7 +42,7 @@ async def record_study_session(
 async def get_progress_stats(
     days: int = 7,  # Статистика за последние X дней
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_active_user)
 ):
     """Получение статистики за период"""
     start_date = datetime.utcnow() - timedelta(days=days)
@@ -58,7 +58,7 @@ async def get_progress_stats(
 @router.get("/summary")
 async def get_summary_stats(
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_active_user)
 ):
     """Сводная статистика"""
     query = select(Progress).where(Progress.user_id == current_user.id)
@@ -87,7 +87,7 @@ async def update_progress(
     word_id: int,
     is_correct: bool,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_active_user)
 ):
     progress = session.exec(
         select(WordProgress)
