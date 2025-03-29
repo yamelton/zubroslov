@@ -5,6 +5,7 @@ uvicorn[standard]==0.27.0
 # Database
 sqlmodel==0.0.16
 asyncpg==0.29.0
+psycopg2-binary==2.9.9
 
 # Auth & Security
 python-jose[cryptography]==3.3.0
