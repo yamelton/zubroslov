@@ -58,6 +58,53 @@ npm install
 npm run dev
 ```
 
+## Настройка PostgreSQL для продакшена
+
+Для продакшена используется PostgreSQL в Yandex Cloud. Для настройки соединения с SSL:
+
+### 1. Скачать SSL-сертификат
+
+```bash
+# На продакшен-сервере
+mkdir -p /home/ubuntu/zubroslov/certs
+wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" \
+     --output-document /home/ubuntu/zubroslov/certs/root.crt
+chmod 0655 /home/ubuntu/zubroslov/certs/root.crt
+```
+
+### 2. Настроить .env файл
+
+Создайте файл `/home/ubuntu/zubroslov/.env` с настройками подключения:
+
+```
+DATABASE_URL=postgresql://dbadmin:your_password@c-c9qqpa50hhvmpoidilk4.rw.mdb.yandexcloud.net:6432/main?sslmode=verify-full
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+### 3. Обновить deploy.sh
+
+Файл `deploy.sh` должен монтировать директорию с сертификатом:
+
+```bash
+docker run -d --name zubroslov-api \
+  -p 8000:8000 \
+  -v /home/ubuntu/zubroslov/.env:/app/.env \
+  -v static_volume:/app/static \
+  -v /home/ubuntu/zubroslov/certs:/home/appuser/.postgresql \
+  --restart unless-stopped \
+  cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:latest
+```
+
+### 4. Импорт слов
+
+После настройки PostgreSQL, импортируйте слова:
+
+```bash
+./import_words_to_postgres.sh
+```
+
 ## Деплой
 
 Деплой осуществляется автоматически через GitHub Actions при пуше в ветку main:

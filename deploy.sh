@@ -37,6 +37,7 @@ docker run -d --name zubroslov-api \
   -p 8000:8000 \
   -v /home/ubuntu/zubroslov/.env:/app/.env \
   -v static_volume:/app/static \
+  -v /home/ubuntu/zubroslov/certs:/home/appuser/.postgresql \
   --restart unless-stopped \
   cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:latest
 
