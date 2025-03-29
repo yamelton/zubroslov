@@ -19,7 +19,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://zubroslov.ru",  # Production
+        "https://zubroslov.ru",  # Production frontend
+        "https://api.zubroslov.ru",  # Production API
         "http://localhost:5173",  # Local development
         "http://localhost:3000"   # Alternative local port
     ],

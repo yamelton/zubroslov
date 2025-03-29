@@ -2,7 +2,6 @@ from __future__ import annotations
 from sqlmodel import SQLModel, Field
 from typing import Optional, List
 import uuid
-from fastapi_users.db import SQLModelBaseUserDB
 
 class UserBase(SQLModel):
     email: str = Field(unique=True, index=True)
@@ -11,7 +10,7 @@ class UserBase(SQLModel):
     is_verified: bool = Field(default=False)
     is_superuser: bool = Field(default=False)
 
-class User(SQLModelBaseUserDB, UserBase, table=True):
+class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
 
