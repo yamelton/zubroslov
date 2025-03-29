@@ -1,0 +1,15 @@
+# This file is used for local development with Colima
+# It overrides settings from docker-compose.yml without modifying the original file
+# Docker Compose automatically merges this with docker-compose.yml
+
+services:
+  backend:
+    # Override the command to remove SSL parameters for local development
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    # Mount the source code for live reloading during development
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/static
+    environment:
+      # Use SQLite for local development
+      DATABASE_URL: sqlite:///./test.db

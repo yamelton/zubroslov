@@ -13,7 +13,10 @@ services:
       DB_SSL_MODE: ${DB_SSL_MODE:-prefer}        # Для локальной разработки prefer, для Managed PG verify-full
     ports:
       - "8000:8000"
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+    command: >
+      sh -c "uvicorn src.main:app --host 0.0.0.0 --port 8000
+      --ssl-keyfile=${SSL_KEY_PATH:-/dev/null}
+      --ssl-certfile=${SSL_CERT_PATH:-/dev/null}"
 
 volumes:
   static_volume:
