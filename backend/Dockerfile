@@ -17,8 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем остальные файлы
 COPY . .
-# Копируем скрипты в отдельную директорию
-COPY scripts/ /app/scripts/
 RUN pip install -e .
 
 RUN mkdir -p /app/static && chmod -R 755 /app/static
