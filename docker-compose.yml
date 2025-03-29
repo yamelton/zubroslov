@@ -1,34 +1,19 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
-    user: "1000:1000"
     volumes:
       - static_volume:/app/static
     environment:
       # Настройки для Managed PostgreSQL
-      DB_HOST: ${YC_DB_HOST}          # Например: rc1a-xxxxx.mdb.yandexcloud.net
-      DB_PORT: ${YC_DB_PORT}          # Обычно 6432
-      DB_NAME: ${YC_DB_NAME}          # Имя БД
-      DB_USER: ${YC_DB_USER}          # Пользователь БД
-      DB_PASSWORD: ${YC_DB_PASSWORD}  # Пароль
-      DB_SSL_MODE: verify-full        # Обязательно для Managed PG
+      DB_HOST: ${YC_DB_HOST:-localhost}          # Например: rc1a-xxxxx.mdb.yandexcloud.net
+      DB_PORT: ${YC_DB_PORT:-5432}               # Обычно 6432
+      DB_NAME: ${YC_DB_NAME:-zubroslov}          # Имя БД
+      DB_USER: ${YC_DB_USER:-postgres}           # Пользователь БД
+      DB_PASSWORD: ${YC_DB_PASSWORD:-postgres}   # Пароль
+      DB_SSL_MODE: ${DB_SSL_MODE:-prefer}        # Для локальной разработки prefer, для Managed PG verify-full
     ports:
       - "8000:8000"
-    command: >
-      sh -c "uvicorn src.main:app --host 0.0.0.0 --port 8000
-      --ssl-keyfile=${SSL_KEY_PATH:-/dev/null}
-      --ssl-certfile=${SSL_CERT_PATH:-/dev/null}"
-
-  frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"  # Для продакшена через Nginx
-    depends_on:
-      - backend
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
 
 volumes:
   static_volume:
