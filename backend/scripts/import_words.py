@@ -6,14 +6,8 @@ from gtts import gTTS
 from sqlmodel import Session, select
 
 # Локальные импорты
-try:
-    # Try the import for when running from the scripts directory
-    from zubroslov.src.database import create_db_and_tables, engine
-    from zubroslov.src.models.word import Word
-except ImportError:
-    # Fallback for when running inside the container
-    from src.database import create_db_and_tables, engine
-    from src.models.word import Word
+from src.database import create_db_and_tables, engine
+from src.models.word import Word
 
 # Конфигурация
 AUDIO_DIR = Path("static/audio")
