@@ -5,7 +5,7 @@ info:
 x-yc-apigateway:
   cors:
     allowedOrigins:
-      - "*"
+      - "https://zubroslov.ru"
     allowedMethods:
       - GET
       - POST
@@ -16,6 +16,7 @@ x-yc-apigateway:
     exposeHeaders:
       - Content-Type
       - Authorization
+    allowCredentials: true
 
 servers:
   - url: https://api.zubroslov.ru

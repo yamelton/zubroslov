@@ -17,7 +17,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Настройка CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://zubroslov.ru",  # Production
+        "http://localhost:5173",  # Local development
+        "http://localhost:3000"   # Alternative local port
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
