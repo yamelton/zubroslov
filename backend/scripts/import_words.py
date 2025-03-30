@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import json
 import logging
+import asyncio
 from pathlib import Path
 from gtts import gTTS
-from sqlmodel import Session, select
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Локальные импорты
-from src.database import create_db_and_tables, engine
+from src.database import create_db_and_tables, async_session_maker
 from src.models.word import Word
 
 # Конфигурация
@@ -14,7 +16,7 @@ AUDIO_DIR = Path("static/audio")
 TTS_LANG = "en"  # Язык для генерации произношения
 TTS_SLOW = False  # Замедленное произношение
 
-def generate_audio(word: Word, session: Session):
+async def generate_audio(word: Word, session: AsyncSession):
     """Генерирует аудиофайл с произношением английского слова"""
     try:
         # Создаем директорию, если нужно
@@ -33,10 +35,9 @@ def generate_audio(word: Word, session: Session):
         tts.save(audio_path)
         
         # Обновляем запись в БД
-        # word.audio_path = str(audio_path.relative_to("static"))
         word.audio_path = "/" + str(audio_path)
         session.add(word)
-        session.commit()
+        await session.commit()
         
         logging.info(f"Сгенерировано аудио для {word.english}")
 
@@ -44,35 +45,33 @@ def generate_audio(word: Word, session: Session):
         logging.error(f"Ошибка генерации аудио: {str(e)}")
         raise
 
-def import_words(json_path: str = "all_words.json"):
+async def import_words(json_path: str = "all_words.json"):
     """Импортирует слова и генерирует аудио"""
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             words_data = json.load(f)
 
-        with Session(engine) as session:
+        async with async_session_maker() as session:
             for item in words_data:
                 # Поиск существующей записи
-                word = session.exec(
+                result = await session.execute(
                     select(Word).where(Word.russian == item['russian'])
-                ).first()
+                )
+                word = result.scalars().first()
 
                 # Создаем новую запись если не найдено
                 if not word:
                     word = Word(
                         russian=item['russian'],
-                        english=item['english'],
-                        category=item.get('category', 'general'),
-                        pronunciation=item.get('pronunciation', ''),
-                        difficulty=item.get('difficulty', 1)
+                        english=item['english']
                     )
                     session.add(word)
-                    session.commit()
-                    session.refresh(word)  # Получаем ID
+                    await session.commit()
+                    await session.refresh(word)  # Получаем ID
 
                 # Генерируем аудио если его нет
                 if not word.audio_path:
-                    generate_audio(word, session)
+                    await generate_audio(word, session)
 
         logging.info(f"Обработано {len(words_data)} слов")
 
@@ -80,7 +79,10 @@ def import_words(json_path: str = "all_words.json"):
         logging.error(f"Ошибка импорта: {str(e)}")
         raise
 
-if __name__ == "__main__":
+async def main():
     logging.basicConfig(level=logging.INFO)
-    create_db_and_tables()
-    import_words()
+    await create_db_and_tables()
+    await import_words()
+
+if __name__ == "__main__":
+    asyncio.run(main())
