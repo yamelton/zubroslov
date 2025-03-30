@@ -27,7 +27,7 @@ on:
     secrets:
       SERVER_HOST:
         required: true
-      SERVER_USERNAME:
+      SERVER_USER:
         required: true
       SSH_KEY:
         required: true
@@ -119,14 +119,14 @@ jobs:
       - name: Debug SSH key
         run: |
           echo "Using SERVER_HOST: ${{ secrets.SERVER_HOST }}"
-          echo "Using SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}"
+          echo "Using SERVER_USER: ${{ secrets.SERVER_USER }}"
           echo "Checking if SSH_KEY is set: ${{ secrets.SSH_KEY != '' }}"
           
       - name: Prepare VM directories
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
+          username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           debug: true
           script: |
@@ -137,7 +137,7 @@ jobs:
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
+          username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "deploy.sh"
           target: "/home/ubuntu/zubroslov/scripts"
@@ -146,7 +146,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
+          username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
             chmod +x /home/ubuntu/zubroslov/scripts/deploy.sh
