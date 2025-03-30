@@ -17,8 +17,24 @@ from .models.models import User, Base, Progress
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Determine which database to use based on environment
+if settings.ENV == "test":
+    # Use test database
+    logger.info(f"Using TEST environment database")
+    # Force PostgreSQL for test environment
+    if not settings.DATABASE_URL.startswith('postgresql'):
+        logger.warning(f"Test environment should use PostgreSQL, but DATABASE_URL is {settings.DATABASE_URL}")
+        # Default to a local test PostgreSQL database if not specified
+        DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/test"
+        logger.info(f"Defaulting to {DATABASE_URL}")
+    else:
+        DATABASE_URL = settings.DATABASE_URL
+else:
+    # Use production database
+    logger.info(f"Using PRODUCTION environment database")
+    DATABASE_URL = settings.DATABASE_URL
+
 # Parse the DATABASE_URL to extract components
-DATABASE_URL = settings.DATABASE_URL
 parsed_url = urlparse(DATABASE_URL)
 
 # Handle different database types
