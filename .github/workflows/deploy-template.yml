@@ -120,7 +120,7 @@ jobs:
         run: |
           echo "Using SERVER_HOST: ${{ secrets.SERVER_HOST }}"
           echo "Using SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}"
-          echo "SSH_KEY length: ${{ length(secrets.SSH_KEY) }}"
+          echo "Checking if SSH_KEY is set: ${{ secrets.SSH_KEY != '' }}"
           
       - name: Prepare VM directories
         uses: appleboy/ssh-action@master
