@@ -16,7 +16,7 @@ jobs:
       env_param: "--env test"
     secrets:
       SERVER_HOST: ${{ secrets.SERVER_HOST }}
-      SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
       YC_STORAGE_ACCESS_KEY: ${{ secrets.YC_STORAGE_ACCESS_KEY }}
       YC_STORAGE_SECRET_KEY: ${{ secrets.YC_STORAGE_SECRET_KEY }}
