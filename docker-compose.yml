@@ -4,13 +4,8 @@ services:
     volumes:
       - static_volume:/app/static
     environment:
-      # Настройки для Managed PostgreSQL
-      DB_HOST: ${YC_DB_HOST:-localhost}          # Например: rc1a-xxxxx.mdb.yandexcloud.net
-      DB_PORT: ${YC_DB_PORT:-5432}               # Обычно 6432
-      DB_NAME: ${YC_DB_NAME:-zubroslov}          # Имя БД
-      DB_USER: ${YC_DB_USER:-postgres}           # Пользователь БД
-      DB_PASSWORD: ${YC_DB_PASSWORD:-postgres}   # Пароль
-      DB_SSL_MODE: ${DB_SSL_MODE:-prefer}        # Для локальной разработки prefer, для Managed PG verify-full
+      # Database URL for PostgreSQL
+      DATABASE_URL: postgresql://${YC_DB_USER:-postgres}:${YC_DB_PASSWORD:-postgres}@${YC_DB_HOST:-localhost}:${YC_DB_PORT:-5432}/${YC_DB_NAME:-zubroslov}
     ports:
       - "8000:8000"
     command: >

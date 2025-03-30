@@ -13,6 +13,8 @@ from .models.models import User, Base, Progress
 DATABASE_URL = settings.DATABASE_URL
 if DATABASE_URL.startswith("sqlite:"):
     DATABASE_URL = DATABASE_URL.replace("sqlite:", "sqlite+aiosqlite:")
+elif DATABASE_URL.startswith("postgresql:"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql:", "postgresql+asyncpg:")
 
 engine = create_async_engine(DATABASE_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
