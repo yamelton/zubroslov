@@ -54,24 +54,64 @@ else:
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 async def create_test_user(session: AsyncSession):
-    result = await session.execute(select(User).where(User.username == "testuser"))
-    test_user = result.scalars().first()
+    try:
+        # Try to find the test user by username
+        result = await session.execute(select(User).where(User.username == "testuser"))
+        test_user = result.scalars().first()
 
-    if not test_user:
-        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        new_user = User(
-            email="testuser@example.com",
-            username="testuser",
-            hashed_password=pwd_context.hash("testpass"),
-            is_active=True,
-            is_verified=True,
-            is_superuser=False
-        )
-        session.add(new_user)
-        await session.commit()
-        print("Test user created")
-    else:
-        print("Test user already exists")
+        if not test_user:
+            # Create a new test user
+            logger.info("Creating new test user")
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            new_user = User(
+                email="testuser@example.com",
+                username="testuser",
+                hashed_password=pwd_context.hash("testpass"),
+                is_active=True,
+                is_verified=True,
+                is_superuser=False
+            )
+            session.add(new_user)
+            await session.commit()
+            logger.info("Test user created")
+        else:
+            # Test user exists, make sure it has all required fields
+            logger.info("Test user already exists, checking fields")
+            
+            # Check if the user has an email field
+            try:
+                # Try to access the email field
+                email = test_user.email
+                logger.info(f"Test user email: {email}")
+            except Exception as e:
+                # If the email field doesn't exist, recreate the user
+                if "has no attribute 'email'" in str(e) or "column user.email does not exist" in str(e):
+                    logger.warning("Test user missing email field, recreating user")
+                    
+                    # Delete the existing user
+                    await session.delete(test_user)
+                    await session.commit()
+                    
+                    # Create a new user with all required fields
+                    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+                    new_user = User(
+                        email="testuser@example.com",
+                        username="testuser",
+                        hashed_password=pwd_context.hash("testpass"),
+                        is_active=True,
+                        is_verified=True,
+                        is_superuser=False
+                    )
+                    session.add(new_user)
+                    await session.commit()
+                    logger.info("Test user recreated with email field")
+                else:
+                    # Some other error occurred
+                    raise
+    except Exception as e:
+        logger.error(f"Error in create_test_user: {str(e)}")
+        # Don't raise the exception, just log it
+        # This allows the application to start even if there are issues with the test user
 
 async def create_db_and_tables():
     from .models.word import Word
@@ -94,11 +134,10 @@ async def create_db_and_tables():
                 # For SQLite, we can safely create tables
                 await conn.run_sync(Base.metadata.create_all)
         
-        # Only create test user in development (SQLite)
-        if parsed_url.scheme.startswith('sqlite'):
-            logger.info("Creating test user...")
-            async with async_session_maker() as session:
-                await create_test_user(session)
+        # Create test user in both development and production
+        logger.info("Creating/checking test user...")
+        async with async_session_maker() as session:
+            await create_test_user(session)
         
         logger.info("Database initialization complete")
     except Exception as e:
