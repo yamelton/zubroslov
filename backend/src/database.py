@@ -78,11 +78,28 @@ async def create_db_and_tables():
     try:
         logger.info("Creating database tables...")
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            # Check if we're using PostgreSQL
+            if parsed_url.scheme.startswith('postgresql'):
+                # For PostgreSQL, we need to be careful about creating tables
+                # as the schema might already exist and be different
+                logger.info("Using PostgreSQL - checking if tables exist before creating")
+                try:
+                    # Try to create tables, but catch any errors
+                    await conn.run_sync(Base.metadata.create_all)
+                except Exception as e:
+                    logger.warning(f"Error creating tables: {str(e)}")
+                    logger.warning("Tables may already exist with a different schema")
+                    # Continue without creating tables
+            else:
+                # For SQLite, we can safely create tables
+                await conn.run_sync(Base.metadata.create_all)
         
-        logger.info("Creating test user...")
-        async with async_session_maker() as session:
-            await create_test_user(session)
+        # Only create test user in development (SQLite)
+        if parsed_url.scheme.startswith('sqlite'):
+            logger.info("Creating test user...")
+            async with async_session_maker() as session:
+                await create_test_user(session)
+        
         logger.info("Database initialization complete")
     except Exception as e:
         logger.error(f"Database initialization failed: {str(e)}")
