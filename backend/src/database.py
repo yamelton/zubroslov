@@ -14,7 +14,10 @@ DATABASE_URL = settings.DATABASE_URL
 if DATABASE_URL.startswith("sqlite:"):
     DATABASE_URL = DATABASE_URL.replace("sqlite:", "sqlite+aiosqlite:")
 elif DATABASE_URL.startswith("postgresql:"):
+    # Remove SSL parameters from the URL
+    import re
     DATABASE_URL = DATABASE_URL.replace("postgresql:", "postgresql+asyncpg:")
+    DATABASE_URL = re.sub(r"\?sslmode=\w+", "", DATABASE_URL)
 
 engine = create_async_engine(DATABASE_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
