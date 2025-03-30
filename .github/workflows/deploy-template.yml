@@ -24,6 +24,21 @@ on:
         required: false
         type: string
         default: ""
+    secrets:
+      SERVER_HOST:
+        required: true
+      SERVER_USERNAME:
+        required: true
+      SSH_KEY:
+        required: true
+      YC_STORAGE_ACCESS_KEY:
+        required: true
+      YC_STORAGE_SECRET_KEY:
+        required: true
+      YC_SERVICE_ACCOUNT_KEY:
+        required: true
+      YC_REGISTRY_ID:
+        required: true
 
 jobs:
   deploy-frontend:
