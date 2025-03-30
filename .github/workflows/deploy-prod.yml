@@ -1,0 +1,23 @@
+name: Deploy to Production
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      environment_name: "Production"
+      branch: "main"
+      api_url: "https://api.zubroslov.ru/api"
+      server_url: "https://api.zubroslov.ru"
+      bucket_name: "zubroslov.ru"
+      image_tag: "latest"
+    secrets:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      YC_STORAGE_ACCESS_KEY: ${{ secrets.YC_STORAGE_ACCESS_KEY }}
+      YC_STORAGE_SECRET_KEY: ${{ secrets.YC_STORAGE_SECRET_KEY }}
+      YC_SERVICE_ACCOUNT_KEY: ${{ secrets.YC_SERVICE_ACCOUNT_KEY }}
+      YC_REGISTRY_ID: ${{ secrets.YC_REGISTRY_ID }}
