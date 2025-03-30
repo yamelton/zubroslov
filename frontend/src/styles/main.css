@@ -238,23 +238,20 @@ button.incorrect {
 }
 
 .session-stats {
-  position: fixed;
-  top: 20px;
-  right: 20px;
   display: flex;
   gap: 15px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 12px 20px;
-  border-radius: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 15px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-left: 15px;
 }
 
 .stat {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 600;
 }
 
@@ -266,13 +263,13 @@ button.incorrect {
   color: #e74c3c;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .session-stats {
-    top: 10px;
-    right: 10px;
-    padding: 8px 15px;
+    margin: 10px auto;
+    justify-content: center;
+    width: fit-content;
   }
-
+  
   .stat {
     font-size: 1rem;
   }
@@ -293,6 +290,7 @@ button.incorrect {
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
 }

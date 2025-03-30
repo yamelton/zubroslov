@@ -3,7 +3,7 @@ import WordGrid from '../components/WordGrid';
 import { useProgress } from '../hooks/useProgress';
 import api from '../api/client';
 
-export function LearnPage() {
+export function LearnPage({ onStatsUpdate }) {
   const [sessionStats, setSessionStats] = useState({
     correct: 0,
     incorrect: 0
@@ -21,26 +21,33 @@ export function LearnPage() {
     loadNextWord();
   }, []);
 
-    const loadNextWord = async () => {
-      try {
-        const response = await api.get('/words/next');
+  // Update parent component when session stats change
+  useEffect(() => {
+    if (onStatsUpdate) {
+      onStatsUpdate(sessionStats);
+    }
+  }, [sessionStats, onStatsUpdate]);
 
-        // Добавляем полный URL только к основному слову
-        const updatedWord = {
-          ...response.word,
-          audioUrl: `${import.meta.env.VITE_SERVER_URL || 'http://localhost:8000'}${response.word.audio_path}`
-        };
-        console.log(updatedWord.audioUrl);
+  const loadNextWord = async () => {
+    try {
+      const response = await api.get('/words/next');
 
-        // Оставляем options без изменений
-        setCurrentWord(updatedWord);
-        setOptions(response.options);
-        setSelected(null);
+      // Добавляем полный URL только к основному слову
+      const updatedWord = {
+        ...response.word,
+        audioUrl: `${import.meta.env.VITE_SERVER_URL || 'http://localhost:8000'}${response.word.audio_path}`
+      };
+      console.log(updatedWord.audioUrl);
 
-      } catch (error) {
-        console.error('Error loading word:', error);
-      }
-    };
+      // Оставляем options без изменений
+      setCurrentWord(updatedWord);
+      setOptions(response.options);
+      setSelected(null);
+
+    } catch (error) {
+      console.error('Error loading word:', error);
+    }
+  };
 
   const handleSelect = async (wordId) => {
     if (selected) return;
@@ -58,14 +65,6 @@ export function LearnPage() {
 
   return (
     <div className="learn-page">
-      <div className="session-stats">
-        <div className="stat correct-stat">
-          ✅ {sessionStats.correct}
-        </div>
-        <div className="stat incorrect-stat">
-          ❌ {sessionStats.incorrect}
-        </div>
-      </div>
       <h1>{currentWord?.russian}</h1>
       <WordGrid 
         words={options} 

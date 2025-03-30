@@ -32,7 +32,10 @@ app.add_middleware(
         "https://zubroslov.ru",  # Production frontend
         "https://api.zubroslov.ru",  # Production API
         "http://localhost:5173",  # Local development
-        "http://localhost:3000"   # Alternative local port
+        "http://localhost:3000",   # Alternative local port
+        "http://localhost:5174",   # Another local port
+        "http://localhost:5175",   # Another local port
+        "http://localhost:5176"    # Another local port
     ],
     allow_credentials=True,
     allow_methods=["*"],
