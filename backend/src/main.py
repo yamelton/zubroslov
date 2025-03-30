@@ -31,6 +31,8 @@ app.add_middleware(
     allow_origins=[
         "https://zubroslov.ru",  # Production frontend
         "https://api.zubroslov.ru",  # Production API
+        "https://test.zubroslov.ru",  # Test frontend
+        "https://api-test.zubroslov.ru",  # Test API
         "http://localhost:5173",  # Local development
         "http://localhost:3000",   # Alternative local port
         "http://localhost:5174",   # Another local port
