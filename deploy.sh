@@ -69,6 +69,7 @@ docker run -d --name $API_CONTAINER_NAME \
   -v /home/ubuntu/zubroslov/$ENV_FILE:/app/.env \
   -v $STATIC_VOLUME:/app/static \
   -v /home/ubuntu/zubroslov/certs:/home/appuser/.postgresql \
+  -e ENV=$ENV \
   --restart unless-stopped \
   cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:$IMAGE_TAG
 
