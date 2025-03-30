@@ -49,8 +49,33 @@ export default {
 
 async function handleResponse(response) {
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Request failed');
+    // Handle different error status codes
+    if (response.status === 401) {
+      // Unauthorized - could be expired token
+      throw new Error('Unauthorized');
+    } else if (response.status === 400) {
+      // Bad request - likely invalid credentials
+      throw new Error('LOGIN_BAD_CREDENTIALS');
+    } else if (response.status === 404) {
+      // Not found
+      throw new Error('Resource not found');
+    }
+    
+    // Try to parse error details from response
+    try {
+      const error = await response.json();
+      throw new Error(error.detail || `Request failed with status ${response.status}`);
+    } catch (e) {
+      // If parsing fails, throw generic error with status code
+      throw new Error(`Request failed with status ${response.status}`);
+    }
   }
-  return response.json();
+  
+  // For successful responses, parse JSON
+  try {
+    return await response.json();
+  } catch (e) {
+    // Handle case where response is not JSON
+    return { success: true };
+  }
 }
