@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select, func
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict
 import random
 from datetime import datetime, timedelta
 
 # Локальные импорты
-from ..database import get_session
+from ..database import get_async_session
 from ..models.word import Word, WordProgress
 from ..models.models import User
 from ..auth.router import current_active_user
@@ -16,12 +17,12 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-@router.get("/", response_model=List[Word])
+@router.get("/", response_model=List[dict])
 async def get_words(
     category: Optional[str] = Query(None, min_length=2),
     limit: int = Query(50, gt=0),
     offset: int = Query(0, ge=0),
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Получение списка слов с фильтрацией по категории"""
     try:
@@ -31,8 +32,17 @@ async def get_words(
         
         query = query.offset(offset).limit(limit)
         
-        result = session.exec(query)
-        return result.all()
+        result = await session.execute(query)
+        words = result.scalars().all()
+        
+        return [
+            {
+                "id": w.id,
+                "english": w.english,
+                "russian": w.russian,
+                "audio_path": w.audio_path
+            } for w in words
+        ]
     
     except Exception as e:
         raise HTTPException(
@@ -43,23 +53,25 @@ async def get_words(
 
 @router.get("/next", response_model=dict)
 async def get_next_word(
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_active_user),
     exclude_last: int = Query(5)
 ):
     try:
         # 1. Проверяем наличие слов в базе (для тестирования)
-        all_words = session.exec(select(Word)).all()
+        result = await session.execute(select(Word))
+        all_words = result.scalars().all()
         if not all_words:
             raise HTTPException(400, "База слов пуста. Добавьте слова через админку")
 
         # Получаем последние показанные слова
-        last_shown = session.exec(
+        last_shown_result = await session.execute(
             select(WordProgress.word_id)
             .where(WordProgress.user_id == current_user.id)
             .order_by(WordProgress.last_shown.desc())
             .limit(exclude_last)
-        ).all()
+        )
+        last_shown = last_shown_result.scalars().all()
 
         # Базовый запрос с исключением последних
         base_query = select(Word)
@@ -67,28 +79,32 @@ async def get_next_word(
             base_query = base_query.where(Word.id.not_in(last_shown))
 
         # Выбор кандидатов с учетом прогресса
-        candidates = session.exec(
+        candidates_result = await session.execute(
             base_query.order_by(Word.id).limit(100)
-        ).all()
+        )
+        candidates = candidates_result.scalars().all()
 
         if not candidates:
-            candidates = session.exec(select(Word)).all()
+            result = await session.execute(select(Word))
+            candidates = result.scalars().all()
 
         next_word = random.choice(candidates) if candidates else None
 
         # Генерация вариантов ответов
-        all_words = session.exec(select(Word)).all()
+        result = await session.execute(select(Word))
+        all_words = result.scalars().all()
         wrong_choices = [w for w in all_words if w.id != next_word.id]
         options = random.sample(wrong_choices, min(7, len(wrong_choices))) + [next_word]
         random.shuffle(options)
 
         # Обновление статистики показа
         if next_word:
-            progress = session.exec(
+            progress_result = await session.execute(
                 select(WordProgress)
                 .where(WordProgress.user_id == current_user.id)
                 .where(WordProgress.word_id == next_word.id)
-            ).first()
+            )
+            progress = progress_result.scalars().first()
 
             if not progress:
                 progress = WordProgress(
@@ -101,15 +117,19 @@ async def get_next_word(
                 progress.last_shown = datetime.utcnow()
 
             session.add(progress)
-            session.commit()
+            await session.commit()
 
         return {
-            "word": next_word,
+            "word": {
+                "id": next_word.id,
+                "english": next_word.english,
+                "russian": next_word.russian,
+                "audio_path": next_word.audio_path
+            } if next_word else None,
             "options":[
                 {
                     "id": w.id,
                     "english": w.english,
-                    # "pronunciation": w.pronunciation,
                     "russian": w.russian
                 } for w in options
             ], 
@@ -117,5 +137,5 @@ async def get_next_word(
         }
 
     except Exception as e:
-        session.rollback()
+        await session.rollback()
         raise HTTPException(status_code=500, detail=str(e))

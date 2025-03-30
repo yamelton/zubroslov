@@ -1,13 +1,23 @@
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+
 from .database import create_db_and_tables
 from .routers import words, progress
-from .auth.router import auth_router, register_router, reset_password_router, verify_router, users_router
+from .auth.router import fastapi_users, auth_backend, current_active_user
+from .schemas import UserRead, UserCreate, UserUpdate
+from .models.models import User
 from .config import settings
 
-app = FastAPI(title="Zubroslov API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create tables and initial data on startup
+    await create_db_and_tables()
+    yield
+
+app = FastAPI(title="Zubroslov API", lifespan=lifespan)
 
 # create a static directory to store the static files
 static_dir = Path('./static')
@@ -15,7 +25,7 @@ static_dir.mkdir(parents=True, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Настройка CORS
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -29,39 +39,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
-
-# Подключение роутеров
+# Auth routers
 app.include_router(
-    auth_router,
+    fastapi_users.get_auth_router(auth_backend),
     prefix="/api/auth/jwt",
     tags=["auth"],
 )
 app.include_router(
-    register_router,
+    fastapi_users.get_register_router(UserRead, UserCreate),
     prefix="/api/auth",
     tags=["auth"],
 )
 app.include_router(
-    reset_password_router,
+    fastapi_users.get_reset_password_router(),
     prefix="/api/auth",
     tags=["auth"],
 )
 app.include_router(
-    verify_router,
+    fastapi_users.get_verify_router(UserRead),
     prefix="/api/auth",
     tags=["auth"],
 )
 app.include_router(
-    users_router,
+    fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/api/users",
     tags=["users"],
 )
+
+# Other routers
 app.include_router(words.router)
 app.include_router(progress.router)
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Zubroslov API!"}
+
+@app.get("/authenticated-route")
+async def authenticated_route(user: User = Depends(current_active_user)):
+    return {"message": f"Hello {user.email}!"}

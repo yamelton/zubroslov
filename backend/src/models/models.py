@@ -1,29 +1,45 @@
 from __future__ import annotations
-from sqlmodel import SQLModel, Field
 from typing import Optional, List
 import uuid
+from datetime import datetime
+from sqlalchemy import Column, String, Boolean, ForeignKey, Integer, Float, DateTime
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 
-class UserBase(SQLModel):
-    email: str = Field(unique=True, index=True)
-    username: str = Field(unique=True, index=True)
-    is_active: bool = Field(default=True)
-    is_verified: bool = Field(default=False)
-    is_superuser: bool = Field(default=False)
+class Base(DeclarativeBase):
+    pass
 
-class User(UserBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    hashed_password: str
+class User(SQLAlchemyBaseUserTableUUID, Base):
+    username = Column(String, unique=True, index=True)
+    
+    # Relationships
+    word_progress = relationship("WordProgress", back_populates="user")
 
-class ProgressBase(SQLModel):
-    user_id: uuid.UUID = Field(foreign_key="user.id")
-    completed: bool = Field(default=False)
-    score: int = Field(default=0)
+# Progress models using SQLAlchemy
+class Progress(Base):
+    __tablename__ = "progress"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
+    completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    score: Mapped[int] = mapped_column(Integer, default=0)
+    duration_seconds: Mapped[int] = mapped_column(Integer, default=0)
+    words_learned: Mapped[int] = mapped_column(Integer, default=0)
+    accuracy: Mapped[float] = mapped_column(Float, default=0.0)
+    session_start: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User", back_populates="progress")
 
-class Progress(ProgressBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+# Add relationship to User model
+User.progress = relationship("Progress", back_populates="user")
 
-class UserResponse(UserBase):
-    id: uuid.UUID
-
-class ProgressResponse(ProgressBase):
+# Response models
+class ProgressResponse:
     id: int
+    user_id: uuid.UUID
+    completed: bool
+    score: int
+    duration_seconds: int
+    words_learned: int
+    accuracy: float
+    session_start: datetime

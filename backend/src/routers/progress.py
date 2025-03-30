@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from ..database import get_session
+from ..database import get_async_session
 from ..models.models import Progress, User
 from ..models.word import WordProgress
 from ..auth.router import current_active_user
@@ -14,12 +15,12 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-@router.post("/session", response_model=Progress)
+@router.post("/session", response_model=dict)
 async def record_study_session(
     duration_seconds: int,
     words_learned: int,
     accuracy: float,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_active_user)
 ):
     """Запись учебной сессии"""
@@ -34,14 +35,21 @@ async def record_study_session(
     )
     
     session.add(progress)
-    session.commit()
-    session.refresh(progress)
-    return progress
+    await session.commit()
+    await session.refresh(progress)
+    
+    return {
+        "id": progress.id,
+        "user_id": progress.user_id,
+        "duration_seconds": duration_seconds,
+        "words_learned": words_learned,
+        "accuracy": accuracy
+    }
 
-@router.get("/stats", response_model=List[Progress])
+@router.get("/stats", response_model=List[dict])
 async def get_progress_stats(
     days: int = 7,  # Статистика за последние X дней
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_active_user)
 ):
     """Получение статистики за период"""
@@ -52,17 +60,28 @@ async def get_progress_stats(
         Progress.session_start >= start_date
     )
     
-    result = session.exec(query)
-    return result.all()
+    result = await session.execute(query)
+    progress_list = result.scalars().all()
+    
+    return [
+        {
+            "id": p.id,
+            "user_id": p.user_id,
+            "duration_seconds": p.duration_seconds,
+            "words_learned": p.words_learned,
+            "accuracy": p.accuracy
+        } for p in progress_list
+    ]
 
 @router.get("/summary")
 async def get_summary_stats(
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_active_user)
 ):
     """Сводная статистика"""
     query = select(Progress).where(Progress.user_id == current_user.id)
-    all_sessions = session.exec(query).all()
+    result = await session.execute(query)
+    all_sessions = result.scalars().all()
     
     if not all_sessions:
         return {
@@ -86,14 +105,15 @@ async def get_summary_stats(
 async def update_progress(
     word_id: int,
     is_correct: bool,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_active_user)
 ):
-    progress = session.exec(
-        select(WordProgress)
-        .where(WordProgress.word_id == word_id)
-        .where(WordProgress.user_id == current_user.id)
-    ).first()
+    query = select(WordProgress).where(
+        WordProgress.word_id == word_id,
+        WordProgress.user_id == current_user.id
+    )
+    result = await session.execute(query)
+    progress = result.scalars().first()
 
     if not progress:
         progress = WordProgress(
@@ -111,5 +131,5 @@ async def update_progress(
         else:
             progress.error_count += 1
 
-    session.commit()
+    await session.commit()
     return {"status": "success"}
