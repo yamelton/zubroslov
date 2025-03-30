@@ -1,9 +1,12 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
+import SessionStats from './SessionStats';
 
-export default function Header() {
+export default function Header({ sessionStats }) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLearnPage = location.pathname === '/';
 
   const handleLogout = async () => {
     await logout();
@@ -28,6 +31,9 @@ export default function Header() {
             </>
           )}
         </div>
+        {isLearnPage && sessionStats && (
+          <SessionStats stats={sessionStats} />
+        )}
       </div>
     </header>
   );
