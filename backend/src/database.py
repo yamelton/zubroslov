@@ -1,23 +1,25 @@
-from sqlmodel import create_engine, SQLModel, Session, select
-from .config import settings
-from .models.models import User, Progress
+from collections.abc import AsyncGenerator
+from fastapi import Depends
+from fastapi_users.db import SQLAlchemyUserDatabase
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy import select
 from passlib.context import CryptContext
 import uuid
 
-engine = create_engine(
-    settings.DATABASE_URL, 
-    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
-)
+from .config import settings
+from .models.models import User, Base, Progress
 
-def get_session():
-    with Session(engine) as session:
-        yield session
+# Convert SQLite URL to async version if needed
+DATABASE_URL = settings.DATABASE_URL
+if DATABASE_URL.startswith("sqlite:"):
+    DATABASE_URL = DATABASE_URL.replace("sqlite:", "sqlite+aiosqlite:")
 
+engine = create_async_engine(DATABASE_URL)
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
-def create_test_user(session: Session):
-    test_user = session.exec(
-        select(User).where(User.username == "testuser")
-    ).first()
+async def create_test_user(session: AsyncSession):
+    result = await session.execute(select(User).where(User.username == "testuser"))
+    test_user = result.scalars().first()
 
     if not test_user:
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -30,14 +32,22 @@ def create_test_user(session: Session):
             is_superuser=False
         )
         session.add(new_user)
-        session.commit()
+        await session.commit()
         print("Test user created")
     else:
         print("Test user already exists")
 
-
-def create_db_and_tables():
+async def create_db_and_tables():
     from .models.word import Word
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        create_test_user(session)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    async with async_session_maker() as session:
+        await create_test_user(session)
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
+
+async def get_user_db(session: AsyncSession = Depends(get_async_session)):
+    yield SQLAlchemyUserDatabase(session, User)
