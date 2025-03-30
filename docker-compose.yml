@@ -4,7 +4,7 @@ services:
     volumes:
       - static_volume:/app/static
     environment:
-      # Database URL for PostgreSQL
+      # Database URL for PostgreSQL without SSL parameters
       DATABASE_URL: postgresql://${YC_DB_USER:-postgres}:${YC_DB_PASSWORD:-postgres}@${YC_DB_HOST:-localhost}:${YC_DB_PORT:-5432}/${YC_DB_NAME:-zubroslov}
     ports:
       - "8000:8000"
