@@ -29,9 +29,15 @@ if [[ "$ENV" == "test" ]]; then
   API_CONTAINER_NAME="zubroslov-api-test"
   API_PORT="8001"
   ENV_FILE=".env.test"
-  STATIC_VOLUME="/var/www/test-static"
+  STATIC_VOLUME="test_static_volume"
   IMAGE_TAG="test"
   LOG_FILE="deploy-test.log"
+fi
+
+# Create Docker volume if it doesn't exist
+if ! docker volume ls | grep -q $STATIC_VOLUME; then
+  echo "[$(date)] Creating Docker volume: $STATIC_VOLUME"
+  docker volume create $STATIC_VOLUME
 fi
 
 # Логирование для отладки
@@ -57,10 +63,6 @@ yc container registry configure-docker
 echo "[$(date)] Получаем последний образ из Container Registry"
 docker pull cr.yandex/crp5dp8t30l3r6brejfj/zubroslov-api:$IMAGE_TAG
 
-# Создаем директорию для статических файлов, если это тестовое окружение
-if [[ "$ENV" == "test" ]]; then
-  mkdir -p /var/www/test-static
-fi
 
 # Запуск нового API контейнера
 echo "[$(date)] Запускаем новый API контейнер"
