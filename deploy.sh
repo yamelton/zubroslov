@@ -93,4 +93,23 @@ else
   fi
 fi
 
+# Настройка статических файлов для nginx в тестовом окружении
+if [[ "$ENV" == "test" ]]; then
+  echo "[$(date)] Настройка статических файлов для nginx..."
+
+  # Находим реальное расположение Docker volume на хосте
+  VOLUME_PATH=$(docker volume inspect test_static_volume --format '{{ .Mountpoint }}')
+
+  # Удаляем старый симлинк или директорию, если они существуют
+  rm -rf /var/www/test-static
+
+  # Создаем символическую ссылку от Docker volume к пути, который ожидает nginx
+  ln -s $VOLUME_PATH /var/www/test-static
+
+  # Убеждаемся, что nginx может читать файлы
+  chmod -R 755 $VOLUME_PATH
+
+  echo "[$(date)] Настройка статических файлов завершена"
+fi
+
 echo "[$(date)] Обновление окружения $ENV завершено успешно"
