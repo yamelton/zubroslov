@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 # Локальные импорты
 from ..database import get_async_session
 from ..models.word import Word, WordProgress, UserWordEvent
-from ..models.models import User
+from ..models.models import User, user_wordset, wordset_word
 from ..auth.router import current_active_user
 
 router = APIRouter(
@@ -59,12 +59,13 @@ async def get_next_word(
     exclude_last: int = Query(5)
 ):
     try:
-        # 1. Проверяем наличие слов в базе (для тестирования)
-        result = await session.execute(select(Word))
-        all_words = result.scalars().all()
-        if not all_words:
-            raise HTTPException(400, "База слов пуста. Добавьте слова через админку")
-
+        # Получаем ID наборов слов, назначенных пользователю
+        user_wordsets_result = await session.execute(
+            select(user_wordset.c.wordset_id)
+            .where(user_wordset.c.user_id == current_user.id)
+        )
+        user_wordset_ids = user_wordsets_result.scalars().all()
+        
         # Получаем последние показанные слова
         last_shown_result = await session.execute(
             select(WordProgress.word_id)
@@ -73,22 +74,67 @@ async def get_next_word(
             .limit(exclude_last)
         )
         last_shown = last_shown_result.scalars().all()
-
-        # Базовый запрос с исключением последних
+        
+        # Базовый запрос
         base_query = select(Word)
+        
+        # Если пользователю назначены наборы слов, выбираем слова только из этих наборов
+        if user_wordset_ids:
+            # Получаем ID слов из наборов пользователя
+            user_words_result = await session.execute(
+                select(wordset_word.c.word_id)
+                .where(wordset_word.c.wordset_id.in_(user_wordset_ids))
+            )
+            user_word_ids = user_words_result.scalars().all()
+            
+            if not user_word_ids:
+                # Если в наборах пользователя нет слов, используем все слова
+                result = await session.execute(select(Word))
+                all_words = result.scalars().all()
+                if not all_words:
+                    raise HTTPException(400, "База слов пуста. Добавьте слова через админку")
+            else:
+                # Ограничиваем выборку словами из наборов пользователя
+                base_query = base_query.where(Word.id.in_(user_word_ids))
+        else:
+            # Если пользователю не назначены наборы, проверяем наличие слов в базе
+            result = await session.execute(select(Word))
+            all_words = result.scalars().all()
+            if not all_words:
+                raise HTTPException(400, "База слов пуста. Добавьте слова через админку")
+        
+        # Исключаем последние показанные слова
         if last_shown:
             base_query = base_query.where(Word.id.not_in(last_shown))
-
+        
         # Выбор кандидатов с учетом прогресса
         candidates_result = await session.execute(
             base_query.order_by(Word.id).limit(100)
         )
         candidates = candidates_result.scalars().all()
-
+        
         if not candidates:
-            result = await session.execute(select(Word))
-            candidates = result.scalars().all()
-
+            # Если после всех фильтров не осталось кандидатов, берем любое слово
+            if user_wordset_ids:
+                # Из наборов пользователя, если они есть
+                user_words_query = select(Word).where(
+                    Word.id.in_(
+                        select(wordset_word.c.word_id)
+                        .where(wordset_word.c.wordset_id.in_(user_wordset_ids))
+                    )
+                )
+                result = await session.execute(user_words_query)
+                candidates = result.scalars().all()
+                
+                if not candidates:
+                    # Если в наборах пользователя нет слов, используем все слова
+                    result = await session.execute(select(Word))
+                    candidates = result.scalars().all()
+            else:
+                # Или из всех слов, если наборы не назначены
+                result = await session.execute(select(Word))
+                candidates = result.scalars().all()
+        
         next_word = random.choice(candidates) if candidates else None
 
         # Генерация вариантов ответов

@@ -4,7 +4,18 @@
 
 set -e  # Exit on error
 
-echo "Importing words to PostgreSQL database..."
-docker exec zubroslov-api python /app/scripts/import_words.py
+# Директория проекта
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$PROJECT_DIR"
 
-echo "Words import complete!"
+# Prepare arguments for the common script
+ARGS="--container zubroslov-api"
+
+# Pass through any arguments to the common script
+while [[ $# -gt 0 ]]; do
+  ARGS="$ARGS $1 $2"
+  shift 2
+done
+
+# Call the common script
+./import_words_common.sh $ARGS
