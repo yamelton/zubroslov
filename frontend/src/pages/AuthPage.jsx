@@ -8,13 +8,15 @@ export function AuthPage() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setMessage('');
+    setIsSuccess(false);
     try {
       // Create form-data
       const formData = new URLSearchParams();
@@ -40,15 +42,17 @@ export function AuthPage() {
         login({ username: email.split('@')[0], email }, response.access_token);
         navigate('/');
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Неверный email или пароль');
+    } catch (loginError) {
+      console.error('Login error:', loginError);
+      setMessage('Неверный email или пароль');
+      setIsSuccess(false);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError('');
+    setMessage('');
+    setIsSuccess(false);
     try {
       // Register through FastAPI Users
       await api.post('/auth/register', {
@@ -61,10 +65,12 @@ export function AuthPage() {
       setIsLogin(true);
       setEmail(''); // Clear the form
       setPassword('');
-      setError('Регистрация успешна! Теперь вы можете войти.');
-    } catch (error) {
-      console.error('Registration error:', error);
-      setError('Ошибка при регистрации. Возможно, пользователь уже существует.');
+      setMessage('Регистрация успешна! Теперь вы можете войти.');
+      setIsSuccess(true);
+    } catch (registerError) {
+      console.error('Registration error:', registerError);
+      setMessage('Ошибка при регистрации. Возможно, пользователь уже существует.');
+      setIsSuccess(false);
     }
   };
 
@@ -87,7 +93,11 @@ export function AuthPage() {
         </button>
       </div>
 
-      {error && <div className="auth-error">{error}</div>}
+      {message && (
+        <div className={isSuccess ? "auth-success" : "auth-error"}>
+          {message}
+        </div>
+      )}
 
       {isLogin ? (
         <form onSubmit={handleLogin}>

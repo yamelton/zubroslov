@@ -220,6 +220,16 @@ button.incorrect {
   font-size: 1.1rem;
 }
 
+.auth-success {
+  background-color: rgba(108, 203, 95, 0.1);
+  border-left: 3px solid var(--primary);
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  color: var(--primary);
+  border-radius: 4px;
+  font-size: 1.1rem;
+}
+
 .progress-indicator::before {
   content: '⭐';
   font-size: 1.4rem;
