@@ -17,5 +17,8 @@ __pycache__/
 .venv/
 venv/
 *.sqlite3
+*.db
 
 *words.json
+
+spotlight/
