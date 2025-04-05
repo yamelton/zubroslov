@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
 from .database import create_db_and_tables
-from .routers import words, progress
+from .routers import words, progress, wordsets
 from .auth.router import fastapi_users, auth_backend, current_active_user
 from .schemas import UserRead, UserCreate, UserUpdate
 from .models.models import User
@@ -74,6 +74,7 @@ app.include_router(
 # Other routers
 app.include_router(words.router)
 app.include_router(progress.router)
+app.include_router(wordsets.router)
 
 @app.get("/")
 def read_root():

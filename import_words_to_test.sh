@@ -1,20 +1,21 @@
 #!/bin/bash
-set -e
+# Script to import words to test database
+# Run this script after the test environment is running
+
+set -e  # Exit on error
 
 # Директория проекта
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_DIR"
 
-echo "Импорт слов в тестовую базу данных..."
+# Prepare arguments for the common script
+ARGS="--container zubroslov-api-test --env test"
 
-# Проверка наличия тестового контейнера
-if ! docker ps | grep -q zubroslov-api-test; then
-  echo "Ошибка: Тестовый контейнер zubroslov-api-test не запущен."
-  echo "Сначала запустите тестовое окружение: ./deploy.sh --env test"
-  exit 1
-fi
+# Pass through any arguments to the common script
+while [[ $# -gt 0 ]]; do
+  ARGS="$ARGS $1 $2"
+  shift 2
+done
 
-# Запуск скрипта импорта слов в тестовом контейнере
-docker exec -it zubroslov-api-test python -m scripts.import_words --env test
-
-echo "Импорт завершен."
+# Call the common script
+./import_words_common.sh $ARGS

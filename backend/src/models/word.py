@@ -5,7 +5,7 @@ from datetime import datetime
 import uuid
 import json
 
-from ..models.models import Base
+from ..models.models import Base, wordset_word
 
 class Word(Base):
     __tablename__ = "word"
@@ -18,6 +18,7 @@ class Word(Base):
     # Relationships
     progress = relationship("WordProgress", back_populates="word")
     user_events = relationship("UserWordEvent", back_populates="word")
+    sets = relationship("WordSet", secondary=wordset_word, back_populates="words")
 
 class WordProgress(Base):
     __tablename__ = "wordprogress"
