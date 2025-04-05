@@ -14,6 +14,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     
     # Relationships
     word_progress = relationship("WordProgress", back_populates="user")
+    word_events = relationship("UserWordEvent", back_populates="user")
 
 # Progress models using SQLAlchemy
 class Progress(Base):
