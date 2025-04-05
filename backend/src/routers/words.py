@@ -3,11 +3,12 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict
 import random
+import json
 from datetime import datetime, timedelta
 
 # Локальные импорты
 from ..database import get_async_session
-from ..models.word import Word, WordProgress
+from ..models.word import Word, WordProgress, UserWordEvent
 from ..models.models import User
 from ..auth.router import current_active_user
 
@@ -117,6 +118,18 @@ async def get_next_word(
                 progress.last_shown = datetime.utcnow()
 
             session.add(progress)
+            
+            # Запись события показа слова
+            word_event = UserWordEvent(
+                user_id=current_user.id,
+                word_id=next_word.id,
+                event_type="shown",
+                event_data=json.dumps({
+                    "options": [opt.id for opt in options]  # Сохраняем ID предложенных вариантов
+                })
+            )
+            session.add(word_event)
+            
             await session.commit()
 
         return {

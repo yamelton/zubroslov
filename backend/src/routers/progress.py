@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Optional
+import json
 
 from ..database import get_async_session
 from ..models.models import Progress, User
-from ..models.word import WordProgress
+from ..models.word import WordProgress, UserWordEvent, Word
 from ..auth.router import current_active_user
 
 router = APIRouter(
@@ -130,6 +131,66 @@ async def update_progress(
             progress.correct_count += 1
         else:
             progress.error_count += 1
+    
+    # Запись события ответа пользователя
+    word_event = UserWordEvent(
+        user_id=current_user.id,
+        word_id=word_id,
+        event_type="answered",
+        is_correct=is_correct
+    )
+    session.add(word_event)
 
     await session.commit()
     return {"status": "success"}
+
+@router.get("/events", response_model=List[dict])
+async def get_user_word_events(
+    limit: int = Query(100, gt=0),
+    offset: int = Query(0, ge=0),
+    word_id: Optional[int] = None,
+    event_type: Optional[str] = None,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user)
+):
+    """Получение истории событий взаимодействия со словами"""
+    query = select(UserWordEvent).where(
+        UserWordEvent.user_id == current_user.id
+    )
+    
+    # Применяем фильтры, если они указаны
+    if word_id is not None:
+        query = query.where(UserWordEvent.word_id == word_id)
+    
+    if event_type is not None:
+        query = query.where(UserWordEvent.event_type == event_type)
+    
+    # Сортировка по времени (сначала новые)
+    query = query.order_by(UserWordEvent.timestamp.desc())
+    
+    # Пагинация
+    query = query.offset(offset).limit(limit)
+    
+    result = await session.execute(query)
+    events = result.scalars().all()
+    
+    # Получаем информацию о словах для отображения
+    word_ids = [e.word_id for e in events]
+    words_query = select(Word).where(Word.id.in_(word_ids))
+    words_result = await session.execute(words_query)
+    words = {w.id: w for w in words_result.scalars().all()}
+    
+    return [
+        {
+            "id": e.id,
+            "word_id": e.word_id,
+            "word": {
+                "english": words[e.word_id].english if e.word_id in words else None,
+                "russian": words[e.word_id].russian if e.word_id in words else None
+            },
+            "event_type": e.event_type,
+            "is_correct": e.is_correct,
+            "timestamp": e.timestamp,
+            "metadata": json.loads(e.event_data) if e.event_data else None
+        } for e in events
+    ]
