@@ -37,7 +37,8 @@ app.add_middleware(
         "http://localhost:3000",   # Alternative local port
         "http://localhost:5174",   # Another local port
         "http://localhost:5175",   # Another local port
-        "http://localhost:5176"    # Another local port
+        "http://localhost:5176",   # Another local port
+        "http://localhost:5177"    # Another local port
     ],
     allow_credentials=True,
     allow_methods=["*"],

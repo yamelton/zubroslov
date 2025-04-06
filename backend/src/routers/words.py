@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict
 import random
 import json
+import math
 from datetime import datetime, timedelta
 
 # Локальные импорты
@@ -56,7 +57,8 @@ async def get_words(
 async def get_next_word(
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_active_user),
-    exclude_last: int = Query(5)
+    exclude_last: int = Query(5),
+    alpha: float = Query(2.0)  # Configurable alpha parameter for the algorithm
 ):
     try:
         # Получаем ID наборов слов, назначенных пользователю
@@ -107,10 +109,8 @@ async def get_next_word(
         if last_shown:
             base_query = base_query.where(Word.id.not_in(last_shown))
         
-        # Выбор кандидатов с учетом прогресса
-        candidates_result = await session.execute(
-            base_query.order_by(Word.id).limit(100)
-        )
+        # Get all candidate words (CHANGED: removed the limit(100))
+        candidates_result = await session.execute(base_query)
         candidates = candidates_result.scalars().all()
         
         if not candidates:
@@ -135,7 +135,39 @@ async def get_next_word(
                 result = await session.execute(select(Word))
                 candidates = result.scalars().all()
         
-        next_word = random.choice(candidates) if candidates else None
+        # Get current user's word counter
+        current_position = current_user.words_shown_counter
+        
+        # Calculate selection weights for each candidate
+        candidate_weights = []
+        for word in candidates:
+            # Get word progress
+            progress_result = await session.execute(
+                select(WordProgress)
+                .where(WordProgress.user_id == current_user.id)
+                .where(WordProgress.word_id == word.id)
+            )
+            progress = progress_result.scalars().first()
+            
+            if not progress:
+                # New word, never shown
+                age = 100  # Default high value for new words
+                exp_error_rate = 0.5  # Neutral starting point
+            else:
+                # Calculate age in terms of words shown since last appearance
+                age = max(1, current_position - progress.last_shown_position)
+                exp_error_rate = progress.exp_error_rate
+            
+            # Calculate selection weight
+            selection_weight = math.log(age) + exp_error_rate * alpha
+            
+            candidate_weights.append((word, selection_weight))
+        
+        # Select word with maximum weight
+        if candidate_weights:
+            next_word, _ = max(candidate_weights, key=lambda x: x[1])
+        else:
+            next_word = None
 
         # Генерация вариантов ответов
         result = await session.execute(select(Word))
@@ -144,7 +176,11 @@ async def get_next_word(
         options = random.sample(wrong_choices, min(7, len(wrong_choices))) + [next_word]
         random.shuffle(options)
 
-        # Обновление статистики показа
+        # Update user's word counter
+        current_user.words_shown_counter += 1
+        session.add(current_user)
+
+        # Update word progress
         if next_word:
             progress_result = await session.execute(
                 select(WordProgress)
@@ -157,11 +193,13 @@ async def get_next_word(
                 progress = WordProgress(
                     user_id=current_user.id,
                     word_id=next_word.id,
-                    shown_count=1
+                    shown_count=1,
+                    last_shown_position=current_user.words_shown_counter
                 )
             else:
                 progress.shown_count += 1
                 progress.last_shown = datetime.utcnow()
+                progress.last_shown_position = current_user.words_shown_counter
 
             session.add(progress)
             

@@ -25,22 +25,24 @@ export default function App() {
   
   return (
     <BrowserRouter>
-      {isAuthenticated && <Header sessionStats={sessionStats} />}
-      <div className={isAuthenticated ? 'app-content with-header' : 'app-content'}>
-        <Routes>
-          {!isAuthenticated ? (
-            <>
-              <Route path="/login" element={<AuthPage />} />
-              <Route path="*" element={<Navigate to="/login" />} />
-            </>
-          ) : (
-            <>
-              <Route path="/" element={<LearnPage onStatsUpdate={updateSessionStats} />} />
-              <Route path="/progress" element={<ProgressPage />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </>
-          )}
-        </Routes>
+      <div className="root-container">
+        {isAuthenticated && <Header sessionStats={sessionStats} />}
+        <div className={isAuthenticated ? 'app-content with-header' : 'app-content'}>
+          <Routes>
+            {!isAuthenticated ? (
+              <>
+                <Route path="/login" element={<AuthPage />} />
+                <Route path="*" element={<Navigate to="/login" />} />
+              </>
+            ) : (
+              <>
+                <Route path="/" element={<LearnPage onStatsUpdate={updateSessionStats} />} />
+                <Route path="/progress" element={<ProgressPage />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </>
+            )}
+          </Routes>
+        </div>
       </div>
     </BrowserRouter>
   );
