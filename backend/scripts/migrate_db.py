@@ -35,9 +35,25 @@ class Settings(BaseSettings):
 settings = Settings()
 logger.info(f"Using database from {settings.Config.env_file}")
 
+# Parse the DATABASE_URL to extract components and handle SSL parameters
+from urllib.parse import urlparse, parse_qs
+
 # Convert to async URL for SQLAlchemy
 if settings.DATABASE_URL.startswith('postgresql'):
-    ASYNC_DATABASE_URL = settings.DATABASE_URL.replace('postgresql', 'postgresql+asyncpg')
+    # Parse the URL to extract SSL parameters
+    parsed_url = urlparse(settings.DATABASE_URL)
+    query_params = parse_qs(parsed_url.query)
+    
+    # Extract SSL parameters
+    ssl_mode = query_params.get('sslmode', ['prefer'])[0]
+    
+    # Reconstruct the URL without SSL parameters
+    clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+    
+    # Convert to asyncpg URL
+    ASYNC_DATABASE_URL = clean_url.replace('postgresql', 'postgresql+asyncpg')
+    
+    logger.info(f"Using PostgreSQL with SSL mode: {ssl_mode}")
 else:
     ASYNC_DATABASE_URL = settings.DATABASE_URL
     logger.warning(f"Non-PostgreSQL database URL detected")
@@ -45,8 +61,19 @@ else:
 async def add_columns():
     """Add the new columns to the database tables."""
     try:
-        # Create async engine
-        engine = create_async_engine(ASYNC_DATABASE_URL)
+        # Create async engine with SSL configuration if needed
+        if settings.DATABASE_URL.startswith('postgresql'):
+            # Configure SSL based on sslmode
+            ssl_args = {}
+            if ssl_mode != 'disable':
+                ssl_args = {"ssl": True}
+            
+            engine = create_async_engine(
+                ASYNC_DATABASE_URL,
+                connect_args=ssl_args
+            )
+        else:
+            engine = create_async_engine(ASYNC_DATABASE_URL)
         
         async with engine.begin() as conn:
             # Check if words_shown_counter column exists in user table
