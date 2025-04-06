@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional
 from datetime import datetime
@@ -30,6 +30,10 @@ class WordProgress(Base):
     shown_count: Mapped[int] = mapped_column(Integer, default=0)
     correct_count: Mapped[int] = mapped_column(Integer, default=0)
     error_count: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # New fields for the smart algorithm
+    last_shown_position: Mapped[int] = mapped_column(Integer, default=0)
+    exp_error_rate: Mapped[float] = mapped_column(Float, default=0.5)
     
     # Relationships
     word = relationship("Word", back_populates="progress")

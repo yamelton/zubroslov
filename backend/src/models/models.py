@@ -39,6 +39,7 @@ class WordSet(Base):
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     username = Column(String, unique=True, index=True)
+    words_shown_counter = Column(Integer, default=0)  # New field for the smart algorithm
     
     # Relationships
     word_progress = relationship("WordProgress", back_populates="user")

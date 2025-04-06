@@ -122,15 +122,24 @@ async def update_progress(
             user_id=current_user.id,
             shown_count=1,
             correct_count=1 if is_correct else 0,
-            error_count=0 if is_correct else 1
+            error_count=0 if is_correct else 1,
+            last_shown_position=current_user.words_shown_counter,
+            exp_error_rate=0.0 if is_correct else 1.0  # Initial value based on first answer
         )
         session.add(progress)
     else:
         progress.shown_count += 1
         if is_correct:
             progress.correct_count += 1
+            # Update exponential error rate (decrease if correct)
+            result_value = 0  # 0 for correct answer
         else:
             progress.error_count += 1
+            # Update exponential error rate (increase if incorrect)
+            result_value = 1  # 1 for incorrect answer
+            
+        # Update exponential error rate
+        progress.exp_error_rate = (result_value + progress.exp_error_rate) / 2
     
     # Запись события ответа пользователя
     word_event = UserWordEvent(
