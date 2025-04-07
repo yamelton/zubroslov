@@ -6,6 +6,7 @@ import random
 import json
 import math
 from datetime import datetime, timedelta
+import random
 
 # Локальные импорты
 from ..database import get_async_session
@@ -151,7 +152,7 @@ async def get_next_word(
             
             if not progress:
                 # New word, never shown
-                age = 100  # Default high value for new words
+                age = max(1, current_position) + 100  # Default high value for new words
                 exp_error_rate = 0.5  # Neutral starting point
             else:
                 # Calculate age in terms of words shown since last appearance
@@ -159,7 +160,7 @@ async def get_next_word(
                 exp_error_rate = progress.exp_error_rate
             
             # Calculate selection weight
-            selection_weight = math.log(age) + exp_error_rate * alpha
+            selection_weight = math.log(age) + exp_error_rate * alpha + random.random() / 100
             
             candidate_weights.append((word, selection_weight))
         
