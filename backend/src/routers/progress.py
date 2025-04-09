@@ -120,7 +120,7 @@ async def update_progress(
         progress = WordProgress(
             word_id=word_id,
             user_id=current_user.id,
-            shown_count=1,
+            shown_count=1,  # This is set to 1 because the word has already been shown
             correct_count=1 if is_correct else 0,
             error_count=0 if is_correct else 1,
             last_shown_position=current_user.words_shown_counter,
@@ -128,7 +128,8 @@ async def update_progress(
         )
         session.add(progress)
     else:
-        progress.shown_count += 1
+        # Don't increment shown_count here, it's already incremented in get_next_word
+        # progress.shown_count += 1  # This line was causing double counting
         if is_correct:
             progress.correct_count += 1
             # Update exponential error rate (decrease if correct)
