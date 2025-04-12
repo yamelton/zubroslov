@@ -1,0 +1,111 @@
+button {
+  padding: 25px;
+  border: none;
+  border-radius: 15px;
+  background: white;
+  font-size: 1.4rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+button:not([disabled]):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+button:not([disabled]):hover::after {
+  opacity: 1;
+}
+
+button.correct {
+  background: var(--primary);
+  color: white;
+  animation: bounce 0.5s;
+}
+
+button.incorrect {
+  background: var(--error);
+  color: white;
+  animation: shake 0.5s;
+}
+
+.logout-button {
+  background-color: transparent;
+  color: var(--text);
+  border: 1px solid #e0e0e0;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: none;
+}
+
+.logout-button:hover {
+  background-color: #f8f8f8;
+  border-color: #d0d0d0;
+}
+
+.auth-page button[type="submit"] {
+  background: var(--primary);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 10px;
+}
+
+.auth-page button[type="submit"]:hover {
+  background: #5bb951;
+}
+
+.auth-tabs button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #777;
+  box-shadow: none;
+}
+
+.auth-tabs button.active {
+  color: var(--primary);
+  font-weight: bold;
+  border-bottom: 2px solid var(--primary);
+}
+
+.auth-tabs button:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+@media (max-width: 768px) {
+  button {
+    padding: 20px;
+    font-size: 1.2rem;
+  }
+}

@@ -1,0 +1,25 @@
+/* Стили для страницы прогресса */
+.progress-page {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.stats-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.stats-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stats-summary p {
+  font-size: 1.2rem;
+  margin: 0;
+}

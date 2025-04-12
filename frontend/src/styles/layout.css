@@ -1,0 +1,17 @@
+/* Grid Layout for App */
+.root-container {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  overflow: hidden; /* Prevent scrolling on the container */
+}
+
+/* App Content Styles */
+.app-content {
+  grid-row: 2;
+  overflow-y: auto; /* Allow scrolling within the content area */
+}
+
+.app-content.with-header {
+  padding-top: 20px;
+}

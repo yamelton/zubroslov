@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 import json
@@ -204,3 +204,65 @@ async def get_user_word_events(
             "metadata": json.loads(e.event_data) if e.event_data else None
         } for e in events
     ]
+
+@router.get("/activity-calendar")
+async def get_activity_calendar(
+    days: int = 365,  # Период для календаря (по умолчанию год)
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user)
+):
+    """Получение данных для календаря активности"""
+    start_date = datetime.utcnow() - timedelta(days=days)
+    
+    # Определяем тип базы данных по URL
+    from ..database import DATABASE_URL
+    
+    # Запрос для подсчета событий по дням
+    if DATABASE_URL.startswith('sqlite'):
+        # SQLite использует strftime для работы с датами
+        query = select(
+            func.strftime('%Y-%m-%d', UserWordEvent.timestamp).label('day'),
+            func.count().label('count')
+        ).where(
+            UserWordEvent.user_id == current_user.id,
+            UserWordEvent.timestamp >= start_date,
+            UserWordEvent.event_type == "answered"  # Считаем только ответы
+        ).group_by(
+            func.strftime('%Y-%m-%d', UserWordEvent.timestamp)
+        ).order_by(
+            func.strftime('%Y-%m-%d', UserWordEvent.timestamp)
+        )
+    else:
+        # PostgreSQL использует date_trunc
+        query = select(
+            func.date_trunc('day', UserWordEvent.timestamp).label('day'),
+            func.count().label('count')
+        ).where(
+            UserWordEvent.user_id == current_user.id,
+            UserWordEvent.timestamp >= start_date,
+            UserWordEvent.event_type == "answered"  # Считаем только ответы
+        ).group_by(
+            func.date_trunc('day', UserWordEvent.timestamp)
+        ).order_by(
+            func.date_trunc('day', UserWordEvent.timestamp)
+        )
+    
+    result = await session.execute(query)
+    activity_data = result.all()
+    
+    # Форматируем результат
+    calendar_data = []
+    for day, count in activity_data:
+        # Если day уже строка (SQLite), используем её напрямую
+        if isinstance(day, str):
+            date_str = day
+        else:
+            # Иначе форматируем datetime объект (PostgreSQL)
+            date_str = day.strftime("%Y-%m-%d")
+        
+        calendar_data.append({
+            "date": date_str,
+            "count": count
+        })
+    
+    return calendar_data

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './styles/main.css';
+import './styles/index.css';
 import { registerSW } from 'virtual:pwa-register';
 
 // Регистрация Service Worker

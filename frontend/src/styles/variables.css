@@ -1,0 +1,16 @@
+:root {
+  --primary: #6CCB5F;
+  --error: #FF6B6B;
+  --background: #F8F9FA;
+  --text: #2D3436;
+  --highlight: #FFD93D;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--background);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

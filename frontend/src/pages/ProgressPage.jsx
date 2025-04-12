@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
+import { ActivityCalendar } from '../components/ActivityCalendar';
 
 export function ProgressPage() {
   const [stats, setStats] = useState(null);
@@ -18,14 +19,18 @@ export function ProgressPage() {
 
   return (
     <div className="progress-page">
-      <h2>Your Progress</h2>
+      <h2>Ваш прогресс</h2>
       {stats && (
-        <div>
-          <p>Total words: {stats.total}</p>
-          <p>Learned: {stats.learned}</p>
-          <p>Accuracy: {stats.accuracy}%</p>
+        <div className="stats-container">
+          <div className="stats-summary">
+            <p>Всего слов: {stats.total}</p>
+            <p>Изучено: {stats.learned}</p>
+            <p>Точность: {stats.accuracy}%</p>
+          </div>
         </div>
       )}
+      
+      <ActivityCalendar days={365} />
     </div>
   );
 }

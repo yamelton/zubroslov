@@ -1,0 +1,37 @@
+.word-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin: 30px auto;
+  max-width: 600px;
+}
+
+.progress-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 24px;
+  border-radius: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(5px);
+  border: 2px solid #e0e0e0;
+  font-size: 1.3rem;
+  color: #2D3436;
+}
+
+.progress-indicator::before {
+  content: '⭐';
+  font-size: 1.4rem;
+}
+
+@media (max-width: 768px) {
+  .word-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}

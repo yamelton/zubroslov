@@ -34,11 +34,13 @@ app.add_middleware(
         "https://test.zubroslov.ru",  # Test frontend
         "https://api-test.zubroslov.ru",  # Test API
         "http://localhost:5173",  # Local development
-        "http://localhost:3000",   # Alternative local port
-        "http://localhost:5174",   # Another local port
-        "http://localhost:5175",   # Another local port
-        "http://localhost:5176",   # Another local port
-        "http://localhost:5177"    # Another local port
+        "http://localhost:3000",  # Alternative local port
+        "http://localhost:5174",  # Another local port
+        "http://localhost:5175",  # Another local port
+        "http://localhost:5176",  # Another local port
+        "http://localhost:5177",  # Another local port
+        "http://localhost:5178",  # Another local port
+        "*",  # Allow all origins (for development only)
     ],
     allow_credentials=True,
     allow_methods=["*"],
