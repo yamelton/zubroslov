@@ -25,7 +25,10 @@ export function ActivityCalendar({ days = 365 }) {
   useEffect(() => {
     if (!loading && calendarGridRef.current) {
       // Scroll to the rightmost position (most recent activity)
-      calendarGridRef.current.scrollLeft = calendarGridRef.current.scrollWidth;
+      // Use a small timeout to ensure the calendar is fully rendered
+      setTimeout(() => {
+        calendarGridRef.current.scrollLeft = calendarGridRef.current.scrollWidth;
+      }, 100);
     }
   }, [loading]);
   

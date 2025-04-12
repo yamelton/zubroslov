@@ -13,13 +13,20 @@
   color: var(--text);
 }
 
+.activity-calendar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .calendar-grid {
   display: flex;
-  gap: 3px;
+  gap: 2px;
   overflow-x: auto;
   padding-bottom: 10px;
-  /* Use a container to ensure the scroll position starts at the end */
-  justify-content: flex-start;
+  /* Center the calendar in the container */
+  margin: 0 auto;
+  max-width: 100%;
 }
 
 /* Add JavaScript to scroll to the end on load */
@@ -27,12 +34,12 @@
 .calendar-week {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .calendar-day {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   transition: transform 0.2s;
 }
@@ -56,8 +63,8 @@
 }
 
 .legend-cell {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
 }
 
