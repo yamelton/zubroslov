@@ -18,7 +18,11 @@
   gap: 3px;
   overflow-x: auto;
   padding-bottom: 10px;
+  /* Use a container to ensure the scroll position starts at the end */
+  justify-content: flex-start;
 }
+
+/* Add JavaScript to scroll to the end on load */
 
 .calendar-week {
   display: flex;

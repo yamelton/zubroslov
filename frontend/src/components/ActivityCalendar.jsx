@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../api/client';
 
 export function ActivityCalendar({ days = 365 }) {
   const [activityData, setActivityData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const calendarGridRef = useRef(null);
   
   useEffect(() => {
     const fetchActivityData = async () => {
@@ -19,6 +20,14 @@ export function ActivityCalendar({ days = 365 }) {
     
     fetchActivityData();
   }, [days]);
+  
+  // Scroll to the end of the calendar when data is loaded
+  useEffect(() => {
+    if (!loading && calendarGridRef.current) {
+      // Scroll to the rightmost position (most recent activity)
+      calendarGridRef.current.scrollLeft = calendarGridRef.current.scrollWidth;
+    }
+  }, [loading]);
   
   // Функция для определения цвета ячейки в зависимости от количества слов
   const getCellColor = (count) => {
@@ -75,7 +84,7 @@ export function ActivityCalendar({ days = 365 }) {
     
     return (
       <div className="activity-calendar">
-        <div className="calendar-grid">
+        <div className="calendar-grid" ref={calendarGridRef}>
           {weeks.map((week, weekIndex) => (
             <div key={`week-${weekIndex}`} className="calendar-week">
               {week.map((day, dayIndex) => (
