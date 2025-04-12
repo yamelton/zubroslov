@@ -4,7 +4,7 @@ Script to fix shown_count values in the WordProgress table.
 This corrects the double-counting bug by setting shown_count to the actual number of 'shown' events.
 
 Usage:
-    python fix_shown_counts.py [--test]  # Use --test flag for test environment
+    python fix_shown_counts.py
 """
 import asyncio
 import sys
@@ -16,20 +16,17 @@ from pydantic_settings import BaseSettings
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Determine environment
-is_test = len(sys.argv) > 1 and sys.argv[1] == "--test"
-env = "test" if is_test else "prod"
-logger.info(f"Using {env.upper()} environment")
-
-# Load settings from appropriate .env file
+# Load settings from environment variables or .env file
 class Settings(BaseSettings):
     DATABASE_URL: str
 
     class Config:
-        env_file = ".env.test" if is_test else ".env"
+        env_file = ".env"
+        env_file_encoding = 'utf-8'
+        extra = 'ignore'
 
 settings = Settings()
-logger.info(f"Using database from {settings.Config.env_file}")
+logger.info(f"Using database from environment variables or .env file")
 
 # Import after settings are loaded to ensure correct database connection
 from src.database import async_session_maker
