@@ -234,17 +234,20 @@ async def get_activity_calendar(
         )
     else:
         # PostgreSQL использует date_trunc
+        # Создаем выражение один раз и используем его везде
+        day_trunc = func.date_trunc('day', UserWordEvent.timestamp).label('day')
+        
         query = select(
-            func.date_trunc('day', UserWordEvent.timestamp).label('day'),
+            day_trunc,
             func.count().label('count')
         ).where(
             UserWordEvent.user_id == current_user.id,
             UserWordEvent.timestamp >= start_date,
             UserWordEvent.event_type == "answered"  # Считаем только ответы
         ).group_by(
-            func.date_trunc('day', UserWordEvent.timestamp)
+            day_trunc
         ).order_by(
-            func.date_trunc('day', UserWordEvent.timestamp)
+            day_trunc
         )
     
     result = await session.execute(query)
